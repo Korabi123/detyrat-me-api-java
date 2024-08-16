@@ -2,6 +2,7 @@ package com.example.demo.BookAPI;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,17 +18,26 @@ public class BookAPI {
     private final List<BookModel> books = new ArrayList<>();
 
     @PostMapping("/api/books/create")
-    public List<BookModel> createBook(@RequestBody List<BookModel> book) {
-       for (BookModel bookModel : book) {
-           this.books.add(bookModel);
-           return book;
-       }
-       return books;
+    public List<BookModel> createBook(@RequestBody List<BookModel> newBooks) {
+        for (BookModel bookModel : newBooks) {
+            this.books.add(bookModel);
+        }
+        return this.books;
     }
 
     @GetMapping("/api/books/get")
-    public List<BookModel> getBooks() {
-        return books;
+    public List<BookModel> getBooks(
+            @RequestParam(value = "bookId", required = false) String bookId,
+            @RequestParam(value = "author", required = false) String author,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "publisher", required = false) String publisher
+    ) {
+        return books.stream()
+                .filter(book -> (bookId == null || book.getId().equals(bookId))
+                && (author == null || book.getAuthor().equals(author))
+                && (title == null || book.getTitle().equals(title))
+                && (publisher == null || book.getPublisher().equals(publisher)))
+                .collect(Collectors.toList());
     }
 
     @PatchMapping("/api/books/update")
